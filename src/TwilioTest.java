@@ -15,7 +15,7 @@ public class TwilioTest {
     public static final String AUTH_TOKEN = "5f187afdea5b5b94aaa64d421fb486f7";
     public static int count = 0;
     public static int minutes = 1;
-    public static final int SEC_IN_MIN = 5;
+    public static final int SEC_IN_MIN = 60;
 
     public static void main(String[]args) throws TwilioRestException, IOException {
         TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
