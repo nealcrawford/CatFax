@@ -1,0 +1,167 @@
+// You may want to be more specific in your imports
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import com.twilio.sdk.*;
+
+import com.twilio.sdk.resource.instance.*;
+
+
+public class TwilioTest {
+    // Find your Account Sid and Token at twilio.com/user/account
+    public static final String ACCOUNT_SID = "AC3fd9f1b394e4fbcff3966c17c131ef97";
+    public static final String AUTH_TOKEN = "5f187afdea5b5b94aaa64d421fb486f7";
+    public static int count = 0;
+    public static int minutes = 1;
+    public static final int SEC_IN_MIN = 5;
+
+    public static void main(String[]args) throws TwilioRestException, IOException {
+        TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
+        MessageSender sender = new MessageSender(client);
+        // Runs the programLoop once a second
+        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    programLoop(client, sender);
+                } catch (TwilioRestException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 0, 1, TimeUnit.SECONDS);
+    }
+    public static void programLoop(TwilioRestClient client, MessageSender sender)throws TwilioRestException, IOException{
+
+        //Checks if a text needs to be replied to
+        MessageReader reader = new MessageReader(client);
+        ArrayList<String> newMessages = reader.checkMessages();
+        boolean sendMessage = false;
+        ArrayList<String> needsMessage = new ArrayList<>();
+        ArrayList<String> msgTxt = new ArrayList<>();
+        for(int i = 0; i < newMessages.size(); i++) {
+            Message message = client.getAccount().getMessage(newMessages.get(i));
+            String from = message.getFrom();
+            if (!from.equals("+18187228329")) {
+                sendMessage = true;
+                needsMessage.add(from);
+                msgTxt.add(message.getBody());
+            }
+        }
+        if(sendMessage = true) {
+            for(int i = 0; i < needsMessage.size(); i++) {
+                sender.setPhoneNumber(needsMessage.get(i));
+
+                String sid = sender.sendMessage(myReverse(msgTxt.get(i)));
+                System.out.println(sid);
+            }
+        }
+
+        // Send any necessary catFAX
+        count++;
+        if(count > (minutes * SEC_IN_MIN)){
+            sendCatFacts(sender);
+            count = 0;
+        }
+    }
+    private static String myReverse(String str) {
+        String reverse = "";
+        int length = str.length();
+        for( int i = length - 1 ; i >= 0 ; i-- ) {
+            reverse = reverse + str.charAt(i);
+        }
+        return reverse;
+    }
+
+    public static void sendCatFacts(MessageSender sender)throws FileNotFoundException, TwilioRestException{
+        Scanner indexFile = new Scanner(new File("currentIndex.txt"));
+        int index = indexFile.nextInt();
+        indexFile.close();
+        PrintStream indexWriter = new PrintStream(new File("currentIndex.txt"));
+        indexWriter.print(index + 1);
+        indexWriter.close();
+        getGroupCatFact(index, sender);
+        System.out.println("sentMessages");
+
+    }
+    // returns the
+    public static void getGroupCatFact(int index, MessageSender sender) throws FileNotFoundException, TwilioRestException {
+        Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
+        Scanner catFaxFile = new Scanner(new File("catFax.txt"));
+        ArrayList<String> catFax = new ArrayList<>();
+        while (catFaxFile.hasNextLine()){
+            catFax.add(catFaxFile.nextLine());
+        }
+        while(numDispFile.hasNextLine()) {
+            String number = numDispFile.nextLine();
+            int displacement = Integer.parseInt(numDispFile.nextLine());
+            // Retrieve catFact
+            int thisIndex = index - displacement;
+            String catFact = catFax.get(thisIndex);
+            sender.setPhoneNumber(number);
+            sender.sendMessage(catFact);
+
+        }
+        numDispFile.close();
+    }
+
+    public static String getInstantCatFact(String number, int index) throws FileNotFoundException {
+        Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
+        // put file into arraylist so we can close the file
+        ArrayList<String> numDisp = new ArrayList<>();
+        while(numDispFile.hasNextLine()) {
+            numDisp.add(numDispFile.nextLine());
+        }
+        numDispFile.close();
+        int displacement = 0; //need to instantiate
+        for(int i = 0; i < numDisp.size(); i += 2){
+            if (numDisp.get(i).equals(number)){
+                displacement = Integer.parseInt(numDisp.get(i+1));
+                numDisp.set(i, "" + (displacement - 1)); //update displacement in ArrayList to be written in file
+                break;
+            }
+        }
+
+        // Rewrite printstream
+        PrintStream fileOverwriter = new PrintStream(new File("numbersDisplacement.txt"));
+        for(int i = 0; i < numDisp.size(); i++){
+            fileOverwriter.println(numDisp.get(i));
+        }
+        fileOverwriter.close();
+        // Retrieve catFact
+        index -= displacement;
+        Scanner catFaxFile = new Scanner(new File("catFax.txt"));
+        ArrayList<String> catFax = new ArrayList<>();
+        while(catFaxFile.hasNextLine()) {
+            catFax.add(numDispFile.nextLine());
+        }
+        String catFact = catFax.get(index % catFax.size());
+        return catFact;
+    }
+}
+
+
+ /*MessageSender sender = new MessageSender(client);
+        //sender.setPhoneNumber("3603931867");
+        sender.setPhoneNumber("3603256564");
+        System.out.println("Phone Number: " + sender.getPhoneNumber());
+        boolean keepGoing = true;
+        while(keepGoing) {
+            Scanner console = new Scanner(System.in);
+            System.out.print("Message? ");
+            String messageText = console.nextLine();
+            System.out.print("Continue(Y/N) ?");
+            String continueText = console.next();
+            if (continueText.toUpperCase().startsWith("n".toUpperCase())){
+                keepGoing = false;
+            } else {
+                keepGoing = true;
+            }
+            String sid = sender.sendMessage(messageText);
+            System.out.println(sid);
+        }
+        */
