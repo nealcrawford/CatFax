@@ -9,7 +9,7 @@ import java.io.*;
 
 
 public class MessageReader {
-    //find out if there is any unhandled messages
+    // Check for any unhandled messages
     TwilioRestClient client;
     public MessageReader(TwilioRestClient client) {
         this.client = client;

@@ -16,10 +16,15 @@ public class TwilioTest {
     public static int count = 0;
     public static int minutes = 960; //1 day assuming each program loop takes 1.5 seconds
     public static final int SEC_IN_MIN = 60;
+    public static int index;
 
     public static void main(String[]args) throws TwilioRestException, IOException {
         TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
         MessageSender sender = new MessageSender(client);
+        Scanner indexFile = new Scanner(new File("currentIndex.txt"));
+        index = indexFile.nextInt();
+        indexFile.close();
+
         // Runs the programLoop once a second
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(new Runnable() {
@@ -47,22 +52,23 @@ public class TwilioTest {
             Message message = client.getAccount().getMessage(newMessages.get(i));
             String from = message.getFrom();
             if (!from.equals("+18187228329")) {
-                sendMessage = true;
-                needsMessage.add(from);
-                msgTxt.add(message.getBody());
+                if (subscriber(from)) {
+                    needsMessage.add(from);
+                    msgTxt.add(message.getBody());
+                } else {
+                    addAsSubscriber(from);
+                }
             }
         }
 
         // Send an instant Cat Fact to numbers that request one
-        if(sendMessage = true) {
-            for(int i = 0; i < needsMessage.size(); i++) {
-                sender.setPhoneNumber(needsMessage.get(i));
-                Scanner indexFile = new Scanner(new File("currentIndex.txt"));
-                int index = indexFile.nextInt();
-                indexFile.close();
-                String sid = sender.sendMessage(getInstantCatFact((""+sender.getPhoneNumber()), index));
-                System.out.println(sid);
-            }
+        for(int i = 0; i < needsMessage.size(); i++) {
+            sender.setPhoneNumber(needsMessage.get(i));
+            Scanner indexFile = new Scanner(new File("currentIndex.txt"));
+            int index = indexFile.nextInt();
+            indexFile.close();
+            String sid = sender.sendMessage(getInstantCatFact((""+sender.getPhoneNumber()), index));
+            System.out.println(sid);
         }
 
         // Send any necessary catFAX
@@ -73,11 +79,17 @@ public class TwilioTest {
         }
     }
 
+    public static void addAsSubscriber(String number) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter("numbersDisplacement.txt", true));
+        bw.write(number);
+        bw.newLine();
+        bw.write(index);
+        bw.newLine();
+        bw.close();
+    }
+
     // Send the timed subscriber cat fact, update the current fact
     public static void sendCatFacts(MessageSender sender)throws FileNotFoundException, TwilioRestException{
-        Scanner indexFile = new Scanner(new File("currentIndex.txt"));
-        int index = indexFile.nextInt();
-        indexFile.close();
         PrintStream indexWriter = new PrintStream(new File("currentIndex.txt"));
         indexWriter.print(index + 1);
         indexWriter.close();
@@ -140,6 +152,16 @@ public class TwilioTest {
         }
         String catFact = catFax.get(index % catFax.size());
         return catFact;
+    }
+
+    public static boolean subscriber(String number) throws FileNotFoundException {
+        Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
+        while (numDispFile.hasNextLine()) {
+            if (number.equals(numDispFile.nextLine())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
