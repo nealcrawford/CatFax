@@ -79,7 +79,9 @@ public class TwilioTest {
         }
     }
 
+    // Add new numbers as subscribers to CatFax
     public static void addAsSubscriber(String number) throws IOException {
+        // Append numbersDisplacement.txt with the new subscriber's displacement
         BufferedWriter bw = new BufferedWriter(new FileWriter("numbersDisplacement.txt", true));
         bw.write(number);
         bw.newLine();
@@ -154,6 +156,7 @@ public class TwilioTest {
         return catFact;
     }
 
+    // Check whether the number is currently a subscriber or not
     public static boolean subscriber(String number) throws FileNotFoundException {
         Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
         while (numDispFile.hasNextLine()) {

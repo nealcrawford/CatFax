@@ -17,14 +17,8 @@ public class MessageReader {
     public ArrayList<String> checkMessages() throws IOException{
         MessageList messages = client.getAccount().getMessages(/*params*/);
         ArrayList<String> newSIDs = new ArrayList<>();
-        Scanner fileReader = new Scanner(new File("handledMessages.txt"));
-        ArrayList<String> handledSIDs = new ArrayList<>();
-        while (fileReader.hasNextLine()) {
-            handledSIDs.add(fileReader.nextLine());
-        }
-        fileReader.close();
+        ArrayList<String> handledSIDs = readInHandled();
         for (Message message : messages) {
-
             String sid = message.getSid();
             boolean found = false;
             for(int i = 0; i < handledSIDs.size(); i++) {
@@ -49,4 +43,14 @@ public class MessageReader {
         return newSIDs;
     }
 
+    // Read in handled messages to an ArrayList
+    public static ArrayList<String> readInHandled() throws FileNotFoundException {
+        Scanner fileReader = new Scanner(new File("handledMessages.txt"));
+        ArrayList<String> handledSIDs = new ArrayList<>();
+        while (fileReader.hasNextLine()) {
+            handledSIDs.add(fileReader.nextLine());
+        }
+        fileReader.close();
+        return handledSIDs;
+    }
 }
