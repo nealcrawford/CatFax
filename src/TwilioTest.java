@@ -52,8 +52,9 @@ public class TwilioTest {
                 msgTxt.add(message.getBody());
             }
         }
+
+        // Send an instant Cat Fact to numbers that request one
         if(sendMessage = true) {
-            // Send Cat Facts to each phone number that needs an instant cat fact
             for(int i = 0; i < needsMessage.size(); i++) {
                 sender.setPhoneNumber(needsMessage.get(i));
                 Scanner indexFile = new Scanner(new File("currentIndex.txt"));
@@ -72,6 +73,7 @@ public class TwilioTest {
         }
     }
 
+    // Send the timed subscriber cat fact, update the current fact
     public static void sendCatFacts(MessageSender sender)throws FileNotFoundException, TwilioRestException{
         Scanner indexFile = new Scanner(new File("currentIndex.txt"));
         int index = indexFile.nextInt();
@@ -81,9 +83,9 @@ public class TwilioTest {
         indexWriter.close();
         getGroupCatFact(index, sender);
         System.out.println("sentMessages");
-
     }
-    // returns the
+
+    // Send the timed cat fact to subscribers
     public static void getGroupCatFact(int index, MessageSender sender) throws FileNotFoundException, TwilioRestException {
         Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
         Scanner catFaxFile = new Scanner(new File("catFax.txt"));
@@ -91,6 +93,8 @@ public class TwilioTest {
         while (catFaxFile.hasNextLine()){
             catFax.add(catFaxFile.nextLine());
         }
+
+        // Determine which cat fact to send based on the subscriber's displacement from current fact
         while(numDispFile.hasNextLine()) {
             String number = numDispFile.nextLine();
             int displacement = Integer.parseInt(numDispFile.nextLine());
@@ -99,14 +103,14 @@ public class TwilioTest {
             String catFact = catFax.get(thisIndex);
             sender.setPhoneNumber(number);
             sender.sendMessage(catFact);
-
         }
         numDispFile.close();
     }
 
+    // Return a new and instant cat fact, update the subscriber's displacement
     public static String getInstantCatFact(String number, int index) throws FileNotFoundException {
         Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
-        // put file into arraylist so we can close the file
+        // Put file into arraylist so we can close the file
         ArrayList<String> numDisp = new ArrayList<>();
         while(numDispFile.hasNextLine()) {
             numDisp.add(numDispFile.nextLine());
