@@ -14,7 +14,7 @@ public class TwilioTest {
     public static final String ACCOUNT_SID = "AC3fd9f1b394e4fbcff3966c17c131ef97";
     public static final String AUTH_TOKEN = "5f187afdea5b5b94aaa64d421fb486f7";
     public static int count = 0;
-    public static int minutes = 1;
+    public static int minutes = 960; //1 day assuming each program loop takes 1.5 seconds
     public static final int SEC_IN_MIN = 60;
 
     public static void main(String[]args) throws TwilioRestException, IOException {
@@ -53,10 +53,13 @@ public class TwilioTest {
             }
         }
         if(sendMessage = true) {
+            // Send Cat Facts to each phone number that needs an instant cat fact
             for(int i = 0; i < needsMessage.size(); i++) {
                 sender.setPhoneNumber(needsMessage.get(i));
-
-                String sid = sender.sendMessage(myReverse(msgTxt.get(i)));
+                Scanner indexFile = new Scanner(new File("currentIndex.txt"));
+                int index = indexFile.nextInt();
+                indexFile.close();
+                String sid = sender.sendMessage(getInstantCatFact((""+sender.getPhoneNumber()), index));
                 System.out.println(sid);
             }
         }
@@ -67,14 +70,6 @@ public class TwilioTest {
             sendCatFacts(sender);
             count = 0;
         }
-    }
-    private static String myReverse(String str) {
-        String reverse = "";
-        int length = str.length();
-        for( int i = length - 1 ; i >= 0 ; i-- ) {
-            reverse = reverse + str.charAt(i);
-        }
-        return reverse;
     }
 
     public static void sendCatFacts(MessageSender sender)throws FileNotFoundException, TwilioRestException{
@@ -121,7 +116,7 @@ public class TwilioTest {
         for(int i = 0; i < numDisp.size(); i += 2){
             if (numDisp.get(i).equals(number)){
                 displacement = Integer.parseInt(numDisp.get(i+1));
-                numDisp.set(i, "" + (displacement - 1)); //update displacement in ArrayList to be written in file
+                numDisp.set((i + 1), "" + (displacement - 1)); //update displacement in ArrayList to be written in file
                 break;
             }
         }
@@ -137,31 +132,10 @@ public class TwilioTest {
         Scanner catFaxFile = new Scanner(new File("catFax.txt"));
         ArrayList<String> catFax = new ArrayList<>();
         while(catFaxFile.hasNextLine()) {
-            catFax.add(numDispFile.nextLine());
+            catFax.add(catFaxFile.nextLine());
         }
         String catFact = catFax.get(index % catFax.size());
         return catFact;
     }
 }
 
-
- /*MessageSender sender = new MessageSender(client);
-        //sender.setPhoneNumber("3603931867");
-        sender.setPhoneNumber("3603256564");
-        System.out.println("Phone Number: " + sender.getPhoneNumber());
-        boolean keepGoing = true;
-        while(keepGoing) {
-            Scanner console = new Scanner(System.in);
-            System.out.print("Message? ");
-            String messageText = console.nextLine();
-            System.out.print("Continue(Y/N) ?");
-            String continueText = console.next();
-            if (continueText.toUpperCase().startsWith("n".toUpperCase())){
-                keepGoing = false;
-            } else {
-                keepGoing = true;
-            }
-            String sid = sender.sendMessage(messageText);
-            System.out.println(sid);
-        }
-        */
