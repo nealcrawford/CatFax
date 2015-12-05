@@ -14,7 +14,7 @@ public class TwilioTest {
     public static final String ACCOUNT_SID = "AC3fd9f1b394e4fbcff3966c17c131ef97";
     public static final String AUTH_TOKEN = "5f187afdea5b5b94aaa64d421fb486f7";
     public static int count = 0;
-    public static int minutes = 960; //1 day assuming each program loop takes 1.5 seconds
+    public static int minutes = 960; //1 day assuming each program loop takes 1.5 seconds 960
     public static final int SEC_IN_MIN = 60;
     public static int index;
 
@@ -45,19 +45,17 @@ public class TwilioTest {
         //Checks if a text needs to be replied to
         MessageReader reader = new MessageReader(client);
         ArrayList<String> newMessages = reader.checkMessages();
-        boolean sendMessage = false;
         ArrayList<String> needsMessage = new ArrayList<>();
         ArrayList<String> msgTxt = new ArrayList<>();
         for(int i = 0; i < newMessages.size(); i++) {
             Message message = client.getAccount().getMessage(newMessages.get(i));
             String from = message.getFrom();
             if (!from.equals("+18187228329")) {
-                if (subscriber(from)) {
-                    needsMessage.add(from);
-                    msgTxt.add(message.getBody());
-                } else {
+                if (!subscriber(from)) {
                     addAsSubscriber(from);
                 }
+                needsMessage.add(from);
+                msgTxt.add(message.getBody());
             }
         }
 
@@ -82,12 +80,12 @@ public class TwilioTest {
     // Add new numbers as subscribers to CatFax
     public static void addAsSubscriber(String number) throws IOException {
         // Append numbersDisplacement.txt with the new subscriber's displacement
-        BufferedWriter bw = new BufferedWriter(new FileWriter("numbersDisplacement.txt", true));
-        bw.write(number);
-        bw.newLine();
-        bw.write(index);
-        bw.newLine();
-        bw.close();
+        FileOutputStream fileOutStream = new FileOutputStream("numbersDisplacement.txt", true);
+        PrintStream filePrinter = new PrintStream(fileOutStream);
+        filePrinter.println(number);
+        filePrinter.println(index);
+        fileOutStream.close();
+        System.out.println("Subscriber Added");
     }
 
     // Send the timed subscriber cat fact, update the current fact
