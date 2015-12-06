@@ -17,6 +17,7 @@ public class TwilioTest {
     public static int minutes = 960; //1 day assuming each program loop takes 1.5 seconds 960
     public static final int SEC_IN_MIN = 60;
     public static int index;
+    public static ArrayList<String> numDisp;
 
     public static void main(String[]args) throws TwilioRestException, IOException {
         TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
@@ -24,6 +25,8 @@ public class TwilioTest {
         Scanner indexFile = new Scanner(new File("currentIndex.txt"));
         index = indexFile.nextInt();
         indexFile.close();
+
+        numDisp = getNumDisplacement();
 
         // Runs the programLoop once a second
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
@@ -40,6 +43,7 @@ public class TwilioTest {
             }
         }, 0, 1, TimeUnit.SECONDS);
     }
+
     public static void programLoop(TwilioRestClient client, MessageSender sender)throws TwilioRestException, IOException{
 
         //Checks if a text needs to be replied to
@@ -85,6 +89,10 @@ public class TwilioTest {
         filePrinter.println(number);
         filePrinter.println(index);
         fileOutStream.close();
+
+        // Update the ArrayList
+        numDisp.add(number);
+        numDisp.add("" + index);
         System.out.println("Subscriber Added");
     }
 
@@ -99,7 +107,6 @@ public class TwilioTest {
 
     // Send the timed cat fact to subscribers
     public static void getGroupCatFact(int index, MessageSender sender) throws FileNotFoundException, TwilioRestException {
-        Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
         Scanner catFaxFile = new Scanner(new File("catFax.txt"));
         ArrayList<String> catFax = new ArrayList<>();
         while (catFaxFile.hasNextLine()){
@@ -107,27 +114,20 @@ public class TwilioTest {
         }
 
         // Determine which cat fact to send based on the subscriber's displacement from current fact
-        while(numDispFile.hasNextLine()) {
-            String number = numDispFile.nextLine();
-            int displacement = Integer.parseInt(numDispFile.nextLine());
+        for (int i = 0; i < numDisp.size(); i++) {
+            String number = numDisp.get(i++);
+            int displacement = Integer.parseInt(numDisp.get(i));
             // Retrieve catFact
             int thisIndex = index - displacement;
             String catFact = catFax.get(thisIndex);
             sender.setPhoneNumber(number);
             sender.sendMessage(catFact);
         }
-        numDispFile.close();
     }
 
     // Return a new and instant cat fact, update the subscriber's displacement
     public static String getInstantCatFact(String number, int index) throws FileNotFoundException {
-        Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
         // Put file into arraylist so we can close the file
-        ArrayList<String> numDisp = new ArrayList<>();
-        while(numDispFile.hasNextLine()) {
-            numDisp.add(numDispFile.nextLine());
-        }
-        numDispFile.close();
         int displacement = 0; //need to instantiate
         for(int i = 0; i < numDisp.size(); i += 2){
             if (numDisp.get(i).equals(number)){
@@ -156,13 +156,21 @@ public class TwilioTest {
 
     // Check whether the number is currently a subscriber or not
     public static boolean subscriber(String number) throws FileNotFoundException {
-        Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
-        while (numDispFile.hasNextLine()) {
-            if (number.equals(numDispFile.nextLine())) {
+        for (int i = 0; i < numDisp.size(); i++) {
+            if (number.equals(numDisp.get(i))) {
                 return true;
             }
         }
         return false;
     }
-}
 
+    // Return an ArrayList of all numbers and their respective displacements
+    public static ArrayList<String> getNumDisplacement() throws FileNotFoundException {
+        Scanner numDispFile = new Scanner(new File("numbersDisplacement.txt"));
+        ArrayList<String> numDisplacements = new ArrayList<>();
+        while (numDispFile.hasNextLine()) {
+            numDisplacements.add(numDispFile.nextLine());
+        }
+        return numDisplacements;
+    }
+}
