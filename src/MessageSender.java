@@ -15,6 +15,7 @@ public class MessageSender {
     List<NameValuePair> params;
     MessageFactory messageFactory;
 
+    // Construct a MessageSender object for the current session
     public MessageSender(TwilioRestClient client) {
         this.client = client;
         this.params = new ArrayList<NameValuePair>();
@@ -24,15 +25,18 @@ public class MessageSender {
         this.messageFactory = client.getAccount().getMessageFactory();
     }
 
+    // Return the phone number
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
+    // Set the phone number that will be dealt with
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
         params.set(0, new BasicNameValuePair("To", phoneNumber));
     }
 
+    // Send a message containing messageText
     public String sendMessage(String messageText) throws TwilioRestException{
         params.set(2, new BasicNameValuePair("Body", messageText));
         Message message = messageFactory.create(params);

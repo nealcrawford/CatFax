@@ -14,13 +14,17 @@ public class MessageReader {
     public MessageReader(TwilioRestClient client) {
         this.client = client;
     }
-    public ArrayList<String> checkMessages() throws IOException{
+
+    // Returns an ArrayList of new messages
+    public ArrayList<String> checkMessages() throws IOException {
         MessageList messages = client.getAccount().getMessages(/*params*/);
         ArrayList<String> newSIDs = new ArrayList<>();
         ArrayList<String> handledSIDs = readInHandled();
         for (Message message : messages) {
             String sid = message.getSid();
             boolean found = false;
+
+            // Check messages against previously handled messages list
             for(int i = 0; i < handledSIDs.size(); i++) {
                 if (handledSIDs.get(i).equals(sid)) {
                     found = true;
@@ -32,6 +36,7 @@ public class MessageReader {
             }
         }
 
+        // Add handled messages to handledMessages.txt
         if(newSIDs.size() > 0){
             FileOutputStream fileOutStream = new FileOutputStream("handledMessages.txt", true);
             PrintStream filePrinter = new PrintStream(fileOutStream);

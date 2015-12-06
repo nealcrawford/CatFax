@@ -47,7 +47,6 @@ public class TwilioTest {
     }
 
     public static void programLoop(TwilioRestClient client, MessageSender sender, Calendar calendar)throws TwilioRestException, IOException{
-
         //Checks if a text needs to be replied to
         MessageReader reader = new MessageReader(client);
         ArrayList<String> newMessages = reader.checkMessages();
@@ -57,11 +56,11 @@ public class TwilioTest {
             Message message = client.getAccount().getMessage(newMessages.get(i));
             String from = message.getFrom();
             if (!from.equals("+18187228329")) {
-                if (killAll(from, message.getBody())) {
+                if (killAll(from, message.getBody())) { // Check if message is a killswitch
                     System.exit(0);
                 } else {
-                    if (!subscriber(from)) {
-                        addAsSubscriber(from);
+                    if (!subscriber(from)) {   // Check if number is new
+                        addAsSubscriber(from); // Add to subscriber list
                     }
                     needsMessage.add(from);
                     msgTxt.add(message.getBody());
@@ -186,6 +185,7 @@ public class TwilioTest {
         return numDisplacements;
     }
 
+    // Return true if the specified numbers text "KILL ALL" to CatFax
     public static boolean killAll(String number, String message) {
         if (number.equals("+13603931867") || number.equals("+13603256564") && message.equals("KILL ALL")) {
             return true;
