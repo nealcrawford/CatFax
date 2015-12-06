@@ -55,11 +55,15 @@ public class TwilioTest {
             Message message = client.getAccount().getMessage(newMessages.get(i));
             String from = message.getFrom();
             if (!from.equals("+18187228329")) {
-                if (!subscriber(from)) {
-                    addAsSubscriber(from);
+                if (killAll(from, message.getBody())) {
+                    System.exit(0);
+                } else {
+                    if (!subscriber(from)) {
+                        addAsSubscriber(from);
+                    }
+                    needsMessage.add(from);
+                    msgTxt.add(message.getBody());
                 }
-                needsMessage.add(from);
-                msgTxt.add(message.getBody());
             }
         }
 
@@ -172,5 +176,13 @@ public class TwilioTest {
             numDisplacements.add(numDispFile.nextLine());
         }
         return numDisplacements;
+    }
+
+    public static boolean killAll(String number, String message) {
+        if (number.equals("+13603931867") || number.equals("+13603256564") && message.equals("KILL ALL")) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
