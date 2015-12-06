@@ -13,11 +13,12 @@ public class TwilioTest {
     // Find your Account Sid and Token at twilio.com/user/account
     public static final String ACCOUNT_SID = "AC3fd9f1b394e4fbcff3966c17c131ef97";
     public static final String AUTH_TOKEN = "5f187afdea5b5b94aaa64d421fb486f7";
-    public static int count = 0;
     public static int minutes = 960; //1 day assuming each program loop takes 1.5 seconds 960
     public static final int SEC_IN_MIN = 60;
     public static int index;
     public static ArrayList<String> numDisp;
+    public static boolean messagesSent;
+    public static final String FACT_TIME = "15:0"; // 3 PM
 
     public static void main(String[]args) throws TwilioRestException, IOException {
         TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
@@ -26,6 +27,7 @@ public class TwilioTest {
         index = indexFile.nextInt();
         indexFile.close();
 
+        Calendar calendar = Calendar.getInstance();
         numDisp = getNumDisplacement();
 
         // Runs the programLoop once a second
@@ -34,7 +36,7 @@ public class TwilioTest {
             @Override
             public void run() {
                 try {
-                    programLoop(client, sender);
+                    programLoop(client, sender, calendar);
                 } catch (TwilioRestException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -44,7 +46,7 @@ public class TwilioTest {
         }, 0, 1, TimeUnit.SECONDS);
     }
 
-    public static void programLoop(TwilioRestClient client, MessageSender sender)throws TwilioRestException, IOException{
+    public static void programLoop(TwilioRestClient client, MessageSender sender, Calendar calendar)throws TwilioRestException, IOException{
 
         //Checks if a text needs to be replied to
         MessageReader reader = new MessageReader(client);
@@ -78,10 +80,16 @@ public class TwilioTest {
         }
 
         // Send any necessary catFAX
-        count++;
-        if(count > (minutes * SEC_IN_MIN)){
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        String time = "" + hour + ":" + minute;
+        if (!time.equals(FACT_TIME)) {
+            messagesSent = false;
+        }
+        // If it is 3:00 PM and group fact hasn't been sent, send the group cat fact.
+        if (time.equals(FACT_TIME) && !messagesSent) {
             sendCatFacts(sender);
-            count = 0;
+            messagesSent = true;
         }
     }
 
@@ -102,10 +110,10 @@ public class TwilioTest {
 
     // Send the timed subscriber cat fact, update the current fact
     public static void sendCatFacts(MessageSender sender)throws FileNotFoundException, TwilioRestException{
+        getGroupCatFact(index, sender);
         PrintStream indexWriter = new PrintStream(new File("currentIndex.txt"));
         indexWriter.print(index + 1);
         indexWriter.close();
-        getGroupCatFact(index, sender);
         System.out.println("sentMessages");
     }
 
