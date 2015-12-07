@@ -21,13 +21,13 @@ public class TwilioTest {
     public static final String FACT_TIME = "15:0"; // 3 PM
 
     public static void main(String[]args) throws TwilioRestException, IOException {
-        TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
-        MessageSender sender = new MessageSender(client);
+        final TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
+        final MessageSender sender = new MessageSender(client);
         Scanner indexFile = new Scanner(new File("currentIndex.txt"));
         index = indexFile.nextInt();
         indexFile.close();
 
-        Calendar calendar = Calendar.getInstance();
+        final Calendar calendar = Calendar.getInstance();
         numDisp = getNumDisplacement();
 
         // Runs the programLoop once a second
