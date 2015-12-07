@@ -57,6 +57,10 @@ public class TwilioTest {
             String from = message.getFrom();
             if (!from.equals("+18187228329")) {
                 if (killAll(from, message.getBody())) { // Check if message is a killswitch
+                    System.out.println("Killswitch Activated");
+                    // Confirm that killswitch did work
+                    sender.setPhoneNumber(from);
+                    sender.sendMessage("Killswitch Activated");
                     System.exit(0);
                 } else {
                     if (!subscriber(from)) {   // Check if number is new
