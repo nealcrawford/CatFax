@@ -13,8 +13,6 @@ public class TwilioTest {
     // Find your Account Sid and Token at twilio.com/user/account
     public static final String ACCOUNT_SID = "AC3fd9f1b394e4fbcff3966c17c131ef97";
     public static final String AUTH_TOKEN = "5f187afdea5b5b94aaa64d421fb486f7";
-    public static int minutes = 960; //1 day assuming each program loop takes 1.5 seconds 960
-    public static final int SEC_IN_MIN = 60;
     public static int index;
     public static ArrayList<String> numDisp;
     public static boolean messagesSent;
