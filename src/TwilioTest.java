@@ -186,6 +186,7 @@ public class TwilioTest {
         while (numDispFile.hasNextLine()) {
             numDisplacements.add(numDispFile.nextLine());
         }
+        numDispFile.close();
         return numDisplacements;
     }
 
