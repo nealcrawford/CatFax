@@ -191,7 +191,7 @@ public class TwilioTest {
 
     // Return true if the specified numbers text "KILL ALL" to CatFax
     public static boolean killAll(String number, String message) {
-        if (number.equals("+13603931867") || number.equals("+13603256564") && message.equals("KILL ALL")) {
+        if ((number.equals("+13603931867") || number.equals("+13603256564")) && message.equals("KILL ALL")) {
             return true;
         } else {
             return false;
