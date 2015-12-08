@@ -16,7 +16,8 @@ public class TwilioTest {
     public static int index;
     public static ArrayList<String> numDisp;
     public static boolean messagesSent;
-    public static final String FACT_TIME = "15:0"; // 3 PM
+    public static final String FACT_TIME = "12:10"; // 3 PM on West coast, VPS in East coast time
+    public static final String KILLSWITCH_CONFIRM = "Killswitch Activated";
 
     public static void main(String[]args) throws TwilioRestException, IOException {
         final TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
@@ -55,10 +56,10 @@ public class TwilioTest {
             String from = message.getFrom();
             if (!from.equals("+18187228329")) {
                 if (killAll(from, message.getBody())) { // Check if message is a killswitch
-                    System.out.println("Killswitch Activated");
+                    System.out.println(KILLSWITCH_CONFIRM);
                     // Confirm that killswitch did work
                     sender.setPhoneNumber(from);
-                    sender.sendMessage("Killswitch Activated");
+                    sender.sendMessage(KILLSWITCH_CONFIRM);
                     System.exit(0);
                 } else {
                     if (!subscriber(from)) {   // Check if number is new
