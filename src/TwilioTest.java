@@ -52,15 +52,8 @@ public class TwilioTest {
             throws TwilioRestException, IOException {
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
-        // If it is a new hour, reconnect to twilio.
-        if (minute == 0 && !reconnect) {
-            client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
-            sender = new MessageSender(client);
-            reconnect = true;
-        }
-        if (minute != 0) {
-            reconnect = false;
-        }
+        // Reconnect to twilio every half hour
+        reconnect(minute);
         //Checks if a text needs to be replied to
         MessageReader reader = new MessageReader(client);
         ArrayList<String> newMessages = reader.checkMessages();
@@ -104,6 +97,17 @@ public class TwilioTest {
         }
         if (!time.equals(FACT_TIME)) {
             messagesSent = false;
+        }
+    }
+
+    public static void reconnect(int minute) {
+        if ((minute == 0 || minute == 30) && !reconnect) {
+            client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
+            sender = new MessageSender(client);
+            reconnect = true;
+        }
+        if (minute != 0 || minute != 30) {
+            reconnect = false;
         }
     }
 
