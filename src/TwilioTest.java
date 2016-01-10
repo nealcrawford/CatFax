@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import com.sun.org.apache.xpath.internal.SourceTree;
 import com.twilio.sdk.*;
 
 import com.twilio.sdk.resource.instance.*;
@@ -17,10 +19,11 @@ public class TwilioTest {
     public static ArrayList<String> numDisp;
     public static boolean messagesSent;
     public static boolean reconnect;
-    public static final String FACT_TIME = "18:0"; // 3 PM on West coast, VPS in East coast time
+    public static final String FACT_TIME = "15:15"; // 3:15 PM
     public static final String KILLSWITCH_CONFIRM = "Killswitch Activated";
     public static TwilioRestClient client;
     public static MessageSender sender;
+    public static Calendar calendar = Calendar.getInstance();
 
     public static void main(String[]args) throws TwilioRestException, IOException {
         client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
@@ -29,7 +32,7 @@ public class TwilioTest {
         index = indexFile.nextInt();
         indexFile.close();
 
-        final Calendar calendar = Calendar.getInstance();
+
         numDisp = getNumDisplacement();
 
         // Runs the programLoop once a second
@@ -38,7 +41,7 @@ public class TwilioTest {
             @Override
             public void run() {
                 try {
-                    programLoop(calendar);
+                    programLoop();
                 } catch (TwilioRestException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -48,13 +51,13 @@ public class TwilioTest {
         }, 0, 1, TimeUnit.SECONDS);
     }
 
-    public static void programLoop(Calendar calendar)
-            throws TwilioRestException, IOException {
+    public static void programLoop() throws TwilioRestException, IOException {
+        calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         // Reconnect to twilio every half hour
+
         reconnect(minute);
-        //Checks if a text needs to be replied to
         MessageReader reader = new MessageReader(client);
         ArrayList<String> newMessages = reader.checkMessages();
         ArrayList<String> needsMessage = new ArrayList<>();
@@ -90,6 +93,7 @@ public class TwilioTest {
         }
 
         String time = "" + hour + ":" + minute;
+
         // If it is 3:00 PM and group fact hasn't been sent, send the group cat fact.
         if (time.equals(FACT_TIME) && !messagesSent) {
             sendCatFacts(sender);
