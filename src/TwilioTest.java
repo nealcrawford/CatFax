@@ -21,11 +21,11 @@ public class TwilioTest {
     public static void main(String[] args) throws FileNotFoundException {
         client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
         sender = new MessageSender(client);
+        displacements = new ArrayList<>();
+        final ArrayList<String> catFacts = getFacts();
 
         getDisplacements();
         getIndex();
-        final ArrayList<String> catFacts = getFacts();
-        displacements = new ArrayList<>();
 
         final ScheduledExecutorService executorService
                 = Executors.newSingleThreadScheduledExecutor();
