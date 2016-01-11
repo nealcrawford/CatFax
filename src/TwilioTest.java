@@ -3,7 +3,6 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import com.twilio.sdk.*;
 import com.twilio.sdk.resource.instance.Message;
 
@@ -18,7 +17,6 @@ public class TwilioTest {
     public static final String KILLSWITCH_CONFIRM = "Killswitch Activated";
     public static TwilioRestClient client;
     public static MessageSender sender;
-    public static Calendar calendar;
 
     public static void main(String[] args) throws FileNotFoundException {
         client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
@@ -72,7 +70,7 @@ public class TwilioTest {
     }
 
     public static String getTime() {
-        calendar = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         return "" + hour + ":" + minute;
