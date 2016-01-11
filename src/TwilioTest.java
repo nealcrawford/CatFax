@@ -9,7 +9,7 @@ import com.twilio.sdk.resource.instance.Message;
 public class TwilioTest {
     public static final String ACCOUNT_SID = "AC3fd9f1b394e4fbcff3966c17c131ef97";
     public static final String AUTH_TOKEN = "5f187afdea5b5b94aaa64d421fb486f7";
-    public static ArrayList<String> displacements;
+    public static List<String> displacements;
     public static boolean messagesSent;
     public static boolean reconnect;
     public static int index;
@@ -25,6 +25,7 @@ public class TwilioTest {
         getDisplacements();
         getIndex();
         final ArrayList<String> catFacts = getFacts();
+        displacements = new ArrayList<>();
 
         final ScheduledExecutorService executorService
                 = Executors.newSingleThreadScheduledExecutor();
@@ -58,7 +59,7 @@ public class TwilioTest {
     public static void eventLoop(ArrayList<String> catFacts) throws TwilioRestException, IOException {
         String time = getTime();
         reconnect(time);
-        ArrayList<String> needsFact = parseInbox(getInbox());
+        List<String> needsFact = parseInbox(getInbox());
         sendInstantFacts(needsFact, catFacts);
 
         if (time.equals(FACT_TIME) && !messagesSent) {
@@ -89,7 +90,7 @@ public class TwilioTest {
         }
     }
 
-    public static ArrayList<String> getInbox() {
+    public static List<String> getInbox() {
         try {
             MessageReader reader = new MessageReader(client);
             return reader.checkMessages();
@@ -98,8 +99,8 @@ public class TwilioTest {
         }
     }
 
-    public static ArrayList<String> parseInbox(ArrayList<String> inbox) throws TwilioRestException, IOException {
-        ArrayList<String> needsFact = new ArrayList<>();
+    public static List<String> parseInbox(List<String> inbox) throws TwilioRestException, IOException {
+        List<String> needsFact = new ArrayList<>();
         for(String newMessage : inbox) {
             Message message = client.getAccount().getMessage(newMessage);
             String from = message.getFrom();
@@ -135,7 +136,7 @@ public class TwilioTest {
         }
         return false;
     }
-//
+
     // Add new numbers as subscribers to CatFax
     public static void addSubscriber(String number) throws IOException {
         // Append numbersDisplacement.txt with the new subscriber's displacement
@@ -151,7 +152,7 @@ public class TwilioTest {
         System.out.println("Subscriber Added");
     }
 
-    public static void sendInstantFacts(ArrayList<String> needsFact, ArrayList<String> catFacts)
+    public static void sendInstantFacts(List<String> needsFact, ArrayList<String> catFacts)
             throws TwilioRestException, FileNotFoundException {
         for (String phoneNumber : needsFact) {
             sender.setPhoneNumber(phoneNumber);

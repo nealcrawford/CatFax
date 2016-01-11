@@ -16,17 +16,17 @@ public class MessageReader {
     }
 
     // Returns an ArrayList of new messages
-    public ArrayList<String> checkMessages() throws IOException {
+    public List<String> checkMessages() throws IOException {
         MessageList messages = client.getAccount().getMessages(/*params*/);
-        ArrayList<String> newSIDs = new ArrayList<>();
-        ArrayList<String> handledSIDs = readInHandled();
+        List<String> newSIDs = new ArrayList<>();
+        List<String> handledSIDs = readInHandled();
         for (Message message : messages) {
             String sid = message.getSid();
             boolean found = false;
 
             // Check messages against previously handled messages list
-            for(int i = 0; i < handledSIDs.size(); i++) {
-                if (handledSIDs.get(i).equals(sid)) {
+            for(String handled : handledSIDs) {
+                if (handled.equals(sid)) {
                     found = true;
                     break;
                 }
@@ -40,8 +40,8 @@ public class MessageReader {
         if(newSIDs.size() > 0){
             FileOutputStream fileOutStream = new FileOutputStream("handledMessages.txt", true);
             PrintStream filePrinter = new PrintStream(fileOutStream);
-            for(int i = 0; i < newSIDs.size(); i++) {
-                filePrinter.println(newSIDs.get(i));
+            for(String newSid : newSIDs) {
+                filePrinter.println(newSid);
             }
             fileOutStream.close();
         }
@@ -49,9 +49,9 @@ public class MessageReader {
     }
 
     // Read in handled messages to an ArrayList
-    public static ArrayList<String> readInHandled() throws FileNotFoundException {
+    public static List<String> readInHandled() throws FileNotFoundException {
         Scanner fileReader = new Scanner(new File("handledMessages.txt"));
-        ArrayList<String> handledSIDs = new ArrayList<>();
+        List<String> handledSIDs = new ArrayList<>();
         while (fileReader.hasNextLine()) {
             handledSIDs.add(fileReader.nextLine());
         }
