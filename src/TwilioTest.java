@@ -44,6 +44,7 @@ public class TwilioTest {
     public static void getIndex() throws FileNotFoundException {
         Scanner indexFile = new Scanner(new File("currentIndex.txt"));
         index = indexFile.nextInt();
+        indexFile.close();
     }
 
     public static void getDisplacements() throws FileNotFoundException {
@@ -122,11 +123,7 @@ public class TwilioTest {
 
     // Return true if the specified numbers text "KILL ALL" to CatFax
     public static boolean isKillswitch(String number, String message) {
-        if ((number.equals("+13603931867") || number.equals("+13603256564")) && message.equals("KILLALL")) {
-            return true;
-        } else {
-            return false;
-        }
+        return((number.equals("+13603931867") || number.equals("+13603256564")) && message.equals("KILLALL"));
     }
 
     // Check whether the number is currently a subscriber or not
@@ -138,7 +135,7 @@ public class TwilioTest {
         }
         return false;
     }
-
+//
     // Add new numbers as subscribers to CatFax
     public static void addSubscriber(String number) throws IOException {
         // Append numbersDisplacement.txt with the new subscriber's displacement
