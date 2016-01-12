@@ -9,6 +9,7 @@ import com.twilio.sdk.resource.instance.Message;
 public class TwilioTest {
     public static final String ACCOUNT_SID = "AC3fd9f1b394e4fbcff3966c17c131ef97";
     public static final String AUTH_TOKEN = "5f187afdea5b5b94aaa64d421fb486f7";
+    public static final String CATFAX_PHONE = "+18187228329";
     public static List<String> displacements;
     public static boolean messagesSent;
     public static boolean reconnect;
@@ -17,15 +18,18 @@ public class TwilioTest {
     public static final String KILLSWITCH_CONFIRM = "Killswitch Activated";
     public static TwilioRestClient client;
     public static MessageSender sender;
+    public static Map<String, String> filters;
 
     public static void main(String[] args) throws FileNotFoundException {
         client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
-        sender = new MessageSender(client);
+        sender = new MessageSender(client, CATFAX_PHONE);
         displacements = new ArrayList<>();
+        filters = new HashMap<>();
         final ArrayList<String> catFacts = getFacts();
 
         getDisplacements();
         getIndex();
+        filters.put("To", CATFAX_PHONE);
 
         final ScheduledExecutorService executorService
                 = Executors.newSingleThreadScheduledExecutor();
@@ -82,7 +86,7 @@ public class TwilioTest {
         int minute = Integer.parseInt(time.substring(time.indexOf(":") + 1));
         if ((minute == 0) || (minute ==30 ) && !reconnect) {
             client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
-            sender = new MessageSender(client);
+            sender = new MessageSender(client, CATFAX_PHONE);
             reconnect = true;
         }
         if (minute != 0 && minute != 30) {
@@ -90,18 +94,12 @@ public class TwilioTest {
         }
     }
 
-    // Returns a List of new messages sent to CatFax. Will only return messages sent
-    // on current day
+    // Returns a List of new messages sent to CatFax.
+    // Return messages sent on current day.
     public static List<String> getInbox() throws IOException{
-        // May be better to define this map somewhere else
-        Map<String, String> filters = new HashMap<>();
-
         filters.put("DateSent", getDate());
-        filters.put("To", "+18187228329");
-
         MessageReader reader = new MessageReader(client, filters);
         return reader.checkMessages();
-
     }
 
     public static String getDate() {

@@ -9,25 +9,21 @@ import org.apache.http.message.BasicNameValuePair;
  * Created by Parker on 12/1/2015.
  */
 public class MessageSender {
-    public String phoneNumber = "3603256564";
-    public final String sendNumber = "+18187228329";
+    private String phoneNumber;
+    private final String sendNumber;
     TwilioRestClient client;
     List<NameValuePair> params;
     MessageFactory messageFactory;
 
     // Construct a MessageSender object for the current session
-    public MessageSender(TwilioRestClient client) {
+    public MessageSender(TwilioRestClient client, String catFaxPhone) {
         this.client = client;
-        this.params = new ArrayList<NameValuePair>();
+        this.params = new ArrayList<>();
+        this.sendNumber = catFaxPhone;
         params.add(new BasicNameValuePair("To", phoneNumber));
         params.add(new BasicNameValuePair("From", sendNumber));
         params.add(new BasicNameValuePair("Body", "WELCOME TO CATFAX!!!!"));
         this.messageFactory = client.getAccount().getMessageFactory();
-    }
-
-    // Return the phone number
-    public String getPhoneNumber() {
-        return phoneNumber;
     }
 
     // Set the phone number that will be dealt with
@@ -43,16 +39,3 @@ public class MessageSender {
         return message.getSid();
     }
 }
-/*
-        // Build the parameters
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("To", "3603256564"));
-        params.add(new BasicNameValuePair("From", "+18187228329"));
-        params.add(new BasicNameValuePair("Body", "WELCOME TO CATFAX!!!!"));
-        MessageFactory messageFactory = client.getAccount().getMessageFactory();
-        Message message = messageFactory.create(params);
-        params.set(2, new BasicNameValuePair("Body", "Sedond Message"));
-        Message message2 = messageFactory.create(params);
-
-        System.out.println(message.getSid());
- */
