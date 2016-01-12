@@ -25,10 +25,11 @@ public class MessageReader {
         MessageList messages = client.getAccount().getMessages(filters);
         List<String> newSIDs = new ArrayList<>();
         List<String> handledSIDs = readInHandled();
+        System.out.println("checking messages");
         for (Message message : messages) {
             String sid = message.getSid();
             boolean found = false;
-
+            System.out.println("Message in list");
             // Check messages against previously handled messages list
             for(String handled : handledSIDs) {
                 if (handled.equals(sid)) {
@@ -38,6 +39,7 @@ public class MessageReader {
             }
             if(!found) {
                 newSIDs.add(sid);
+                System.out.println("newSID added");
             }
         }
 
