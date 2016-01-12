@@ -1,4 +1,5 @@
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -103,26 +104,10 @@ public class TwilioTest {
     }
 
     public static String getDate() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        int month = 1 + calendar.get(Calendar.MONTH);
-        String monthStr = "";
-        String dayStr = "";
-
-        if (month < 10) {
-            monthStr += "0" + month;
-        } else {
-            monthStr += month;
-        }
-
-        if (day < 10) {
-            dayStr += "0" + day;
-        } else {
-            dayStr += day;
-        }
-
-        return "" + year + "-" + monthStr + "-" + dayStr;
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, 1);
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+        return format1.format(cal.getTime());
     }
 
     public static List<String> parseInbox(List<String> inbox) throws TwilioRestException, IOException {
