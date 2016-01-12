@@ -11,13 +11,18 @@ import java.io.*;
 public class MessageReader {
     // Check for any unhandled messages
     TwilioRestClient client;
-    public MessageReader(TwilioRestClient client) {
+    Map<String, String> filters;
+
+    // Accepts a Twillio Client and a Map with message filters
+    // Filters: https://www.twilio.com/docs/api/rest/message#list-get-filters
+    public MessageReader(TwilioRestClient client, Map<String, String> filters) {
         this.client = client;
+        this.filters = filters;
     }
 
-    // Returns an ArrayList of new messages
+    // Returns an ArrayList of new messages following criteria passed in constructor
     public List<String> checkMessages() throws IOException {
-        MessageList messages = client.getAccount().getMessages(/*params*/);
+        MessageList messages = client.getAccount().getMessages(filters);
         List<String> newSIDs = new ArrayList<>();
         List<String> handledSIDs = readInHandled();
         for (Message message : messages) {

@@ -90,13 +90,41 @@ public class TwilioTest {
         }
     }
 
-    public static List<String> getInbox() {
-        try {
-            MessageReader reader = new MessageReader(client);
-            return reader.checkMessages();
-        } catch (IOException e) {
-            return new ArrayList<>();
+    // Returns a List of new messages sent to CatFax. Will only return messages sent
+    // on current day
+    public static List<String> getInbox() throws IOException{
+        // May be better to define this map somewhere else
+        Map<String, String> filters = new HashMap<>();
+
+        filters.put("DateSent", getDate());
+        filters.put("To", "+18187228329");
+
+        MessageReader reader = new MessageReader(client, filters);
+        return reader.checkMessages();
+
+    }
+
+    public static String getDate() {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = 1 + calendar.get(Calendar.MONTH);
+        String monthStr = "";
+        String dayStr = "";
+
+        if(month < 10){
+            monthStr += "0" +month;
+        } else{
+            monthStr += month;
         }
+
+        if(day < 10){
+            dayStr += "0" + day;
+        } else{
+            dayStr += day;
+        }
+
+        return "" + year + "-" + monthStr + "-" + dayStr;
     }
 
     public static List<String> parseInbox(List<String> inbox) throws TwilioRestException, IOException {
@@ -104,19 +132,17 @@ public class TwilioTest {
         for(String newMessage : inbox) {
             Message message = client.getAccount().getMessage(newMessage);
             String from = message.getFrom();
-            if (!from.equals("+18187228329")) {
-                if (isKillswitch(from, message.getBody())) { // Check if message is a killswitch
-                    System.out.println(KILLSWITCH_CONFIRM);
-                    // Confirm that killswitch did work
-                    sender.setPhoneNumber(from);
-                    sender.sendMessage(KILLSWITCH_CONFIRM);
-                    System.exit(0);
-                } else {
-                    if (!isSubscriber(from)) {   // Check if number is new
-                        addSubscriber(from); // Add to subscriber list
-                    }
-                    needsFact.add(from);
+            if (isKillswitch(from, message.getBody())) { // Check if message is a killswitch
+                System.out.println(KILLSWITCH_CONFIRM);
+                // Confirm that killswitch did work
+                sender.setPhoneNumber(from);
+                sender.sendMessage(KILLSWITCH_CONFIRM);
+                System.exit(0);
+            } else {
+                if (!isSubscriber(from)) {   // Check if number is new
+                    addSubscriber(from); // Add to subscriber list
                 }
+                needsFact.add(from);
             }
         }
         return needsFact;
