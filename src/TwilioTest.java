@@ -112,15 +112,15 @@ public class TwilioTest {
         String monthStr = "";
         String dayStr = "";
 
-        if(month < 10){
-            monthStr += "0" +month;
-        } else{
+        if (month < 10) {
+            monthStr += "0" + month;
+        } else {
             monthStr += month;
         }
 
-        if(day < 10){
+        if (day < 10) {
             dayStr += "0" + day;
-        } else{
+        } else {
             dayStr += day;
         }
 
