@@ -29,6 +29,9 @@ public class MessageSender {
     // Set the phone number that will be dealt with
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+        if(phoneNumber.equals(sendNumber)){
+            throw new IllegalArgumentException("sent message to self, this is bad and you should feel bad");
+        }
         params.set(0, new BasicNameValuePair("To", phoneNumber));
     }
 
