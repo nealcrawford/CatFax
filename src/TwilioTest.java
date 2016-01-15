@@ -22,6 +22,7 @@ public class TwilioTest {
     public static Map<String, String> filters;
 
     public static void main(String[] args) throws FileNotFoundException {
+        //test
         client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
         sender = new MessageSender(client, CATFAX_PHONE);
         displacements = new ArrayList<>();
@@ -38,9 +39,7 @@ public class TwilioTest {
             public void run() {
                 try {
                     eventLoop(catFacts);
-                } catch (TwilioRestException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
+                } catch (TwilioRestException|IOException e) {
                     e.printStackTrace();
                 }
             }
