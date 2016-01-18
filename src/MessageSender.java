@@ -49,11 +49,10 @@ public class MessageSender {
      */
     //
     public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-
         if(phoneNumber.equals(sendNumber)){
             throw new IllegalArgumentException("sent message to self, this is bad and you should feel bad");
         }
+        this.phoneNumber = phoneNumber;
 
         params.set(0, new BasicNameValuePair("To", phoneNumber));
     }
