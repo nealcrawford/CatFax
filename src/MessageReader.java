@@ -4,8 +4,6 @@
  * Checks for any unhandled messages
  ********************************************/
 
-// You may want to be more specific in your imports
-
 import com.twilio.sdk.TwilioRestClient;
 import com.twilio.sdk.resource.instance.Message;
 import com.twilio.sdk.resource.list.MessageList;
@@ -33,7 +31,7 @@ public class MessageReader {
      * Returns an ArrayList of new messages following criteria passed in constructor.
      *
      * @return An ArrayList of new filtered messages from handledMessages.txt
-     * @throws IOException  if handledMessages.txt is not found.
+     * @throws IOException  if error writing to handledMessages.txt
      */
     public List<String> checkMessages() throws IOException {
         MessageList messages = client.getAccount().getMessages(filters);
@@ -42,16 +40,10 @@ public class MessageReader {
         List<String> handledSIDs = readInHandled();
 
         for (Message message : messages) {
-            String sid = message.getSid();
-            boolean found = false;
             // Check messages against previously handled messages list
-            for(String handled : handledSIDs) {
-                if (handled.equals(sid)) {
-                    found = true;
-                    break;
-                }
-            }
-            if(!found) {
+            String sid = message.getSid();
+
+            if(!handledSIDs.contains(sid)) {
                 newSIDs.add(sid);
                 System.out.println("newSID added");
             }
@@ -61,11 +53,14 @@ public class MessageReader {
         if(newSIDs.size() > 0){
             FileOutputStream fileOutStream = new FileOutputStream("handledMessages.txt", true);
             PrintStream filePrinter = new PrintStream(fileOutStream);
+
             for(String newSid : newSIDs) {
                 filePrinter.println(newSid);
             }
+
             fileOutStream.close();
         }
+
         return newSIDs;
     }
 
