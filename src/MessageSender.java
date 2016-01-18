@@ -1,13 +1,18 @@
-import java.util.*;
-import com.twilio.sdk.*;
-import com.twilio.sdk.resource.factory.*;
-import com.twilio.sdk.resource.instance.*;
-import com.twilio.sdk.resource.list.*;
+/**
+ * MessageSender.java
+ *
+ * Sends a message using the Twilio API
+ */
+
+import com.twilio.sdk.TwilioRestClient;
+import com.twilio.sdk.TwilioRestException;
+import com.twilio.sdk.resource.factory.MessageFactory;
+import com.twilio.sdk.resource.instance.Message;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-/**
- * Created by Parker on 12/1/2015.
- */
+
+import java.util.*;
+
 public class MessageSender {
     private String phoneNumber;
     private final String sendNumber;

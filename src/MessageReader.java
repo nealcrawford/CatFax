@@ -19,7 +19,7 @@ public class MessageReader {
     /**
      * Creates a new MessageReader
      *
-     * @param client    Twillio Client
+     * @param client    Twilio Client
      * @param filters   https://www.twilio.com/docs/api/rest/message#list-get-filters
      */
     public MessageReader(TwilioRestClient client, Map<String, String> filters) {
