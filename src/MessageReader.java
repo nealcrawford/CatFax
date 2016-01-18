@@ -1,10 +1,8 @@
 // You may want to be more specific in your imports
 import java.util.*;
 import com.twilio.sdk.*;
-import com.twilio.sdk.resource.factory.*;
 import com.twilio.sdk.resource.instance.*;
 import com.twilio.sdk.resource.list.*;
-import org.apache.http.NameValuePair;
 import java.io.*;
 
 
