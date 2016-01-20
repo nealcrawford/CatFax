@@ -13,7 +13,7 @@ public class CatFaxMain {
     private static final String ACCOUNT_SID             = "AC3fd9f1b394e4fbcff3966c17c131ef97";
     private static final String AUTH_TOKEN              = "5f187afdea5b5b94aaa64d421fb486f7";
     private static final String CATFAX_PHONE            = "+18187228329";
-    private static final String FACT_TIME               = "15:15"; // 3:15 PM
+    private static       String FACT_TIME               = "15:15"; // 3:15 PM
     private static final String KILLSWITCH_CONFIRM      = "Killswitch Activated";
     private static final String KILLSWITCH_MSG          = "KILLALL";
     private static final String KILLSWITCH_NUM1         = "+13603931867";
@@ -35,16 +35,18 @@ public class CatFaxMain {
     private static MessageSender       sender;
     private static Map<String, String> filters;
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
-        testing = args[0].equals("testing");
+    public static void main(String[] args)
+            throws IOException, ClassNotFoundException, TwilioRestException {
+        testing = args.length != 0;
 
         // Setup logger
         FileHandler fh = new FileHandler("catfax.log");
+
         // Enable logging to sout if in testing mode
         if(testing) {
-            log.addHandler(new StreamHandler(System.out, new SimpleFormatter()));
+            log.addHandler(new StreamHandler(System.out, new LogFormatter()));
         }
-        fh.setFormatter(new SimpleFormatter());
+        fh.setFormatter(new LogFormatter());
         log.addHandler(fh);
 
         client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
@@ -68,8 +70,9 @@ public class CatFaxMain {
                     eventLoop();
                 } catch(TwilioRestException e) {
                     e.printStackTrace();
-                    log.log(Level.WARNING, "There was an error with Twilio. Not exiting.", e);
-                } catch(IOException e) {
+                    log.log(Level.WARNING, "There was an error with Twilio. Not exiting.");
+                    log.log(Level.WARNING, e.getMessage(), e);
+                } catch(Exception e) {
                     // Cause the program to exit on an IOException
                     log.log(Level.SEVERE, e.getMessage(), e);
                     throw new RuntimeException();
@@ -78,29 +81,60 @@ public class CatFaxMain {
         }, 0, 1, TimeUnit.SECONDS);
 
         if(testing) {
-            log.info("In testing mode. Commands: send, index, subs, exit");
+            log.info("In testing mode. Commands: send, index, subs, add #, remove #, " +
+                     "displacement # #, time #, settime ##:##, gettime, ping, exit");
             Scanner scan = new Scanner(System.in);
-            boolean exit = false;
-            while(!exit) {
+            while(true) {
                 if(scan.hasNext()) {
                     String input = scan.next();
                     try {
                         switch(input) {
                             case "send":
-                                sendInstantFacts(subscribers);
-                                System.out.println("Texts sent");
+                                sendGroupFact(sender);
+                                log.info("Texts sent");
                                 break;
                             case "index":
-                                System.out.println("Current index: " + index);
+                                log.info("Current index: " + index);
                                 break;
                             case "subs":
-                                System.out.println(subscribers);
+                                log.info(subscribers.toString());
                                 break;
                             case "exit":
-                                exit = true;
+                                System.exit(0);
+                                break;
+                            case "ping":
+                                log.info("Pong");
+                                break;
+                            case "remove":
+                                subscribers.remove(new Subscriber(scan.next()));
+                                saveSubscribers();
+                                log.info("Removed.");
+                                break;
+                            case "displacement":
+                                subscribers.get(subscribers.indexOf(new Subscriber(scan.next()))
+                                ).setDisplacement(scan.nextInt());
+                                saveSubscribers();
+                                log.info("Displacement set.");
+                                break;
+                            case "add":
+                                subscribers.add(new Subscriber(scan.next(), index));
+                                saveSubscribers();
+                                log.info("Added " +
+                                         subscribers.get(subscribers.size() - 1).getPhoneNumber());
+                                break;
+                            case "settime":
+                                FACT_TIME = scan.next();
+                                log.info("Time changed to " + FACT_TIME);
+                                break;
+                            case "gettime":
+                                log.info("Current time: " + getTime());
+                                break;
+                            default:
+                                log.info("Command not recognized");
                         }
                     } catch(Exception e) {
                         e.printStackTrace();
+                        throw e;
                     }
                 }
             }
@@ -173,6 +207,9 @@ public class CatFaxMain {
         reconnect(time);
 
         List<Subscriber> needsFact = parseInbox(getInbox());
+        for(Subscriber sub : needsFact) {
+            log.info("Message received from: " + sub.getPhoneNumber());
+        }
         sendInstantFacts(needsFact);
 
         if (time.equals(FACT_TIME) && !messagesSent) {
@@ -187,7 +224,7 @@ public class CatFaxMain {
      * @return 24-hour time in the form of 17:32.
      */
     private static String getTime() {
-        return new SimpleDateFormat("HHmm").format(new Date());
+        return new SimpleDateFormat("HH:mm").format(new Date());
     }
 
     /**
@@ -304,7 +341,7 @@ public class CatFaxMain {
      * @throws IOException if the log file is not writable.
      */
     private static void saveSubscribers() throws IOException {
-        try(FileOutputStream file = new FileOutputStream(new File(getSubscriberFile()));
+        try(FileOutputStream file = new FileOutputStream(new File(getSubscriberFile()), false);
             ObjectOutputStream oos = new ObjectOutputStream(file)) {
 
             oos.writeObject(subscribers);
@@ -343,12 +380,22 @@ public class CatFaxMain {
             sub.setDisplacement(displacement + 1);
 
             // Retrieve catFact
-            String fact = catFacts.get((index - displacement) % catFacts.size());
+            String fact = catFacts.get(getFactIndex(displacement));
             String sid = sender.sendMessage(fact);
             log.info("Instant fact sent to: " + sub.getPhoneNumber() + "\t " + sid);
         }
 
         saveSubscribers();
+    }
+
+    /**
+     * Gets the displacement of the appropriate fact for the displacement
+     * @param displacement The displacement of the subscriber.
+     * @return The index.
+     */
+    private static int getFactIndex(int displacement) {
+        int mod = (index - displacement) % catFacts.size();
+        return (mod < 0) ? mod + catFacts.size() : mod;
     }
 
     /**
@@ -384,32 +431,31 @@ public class CatFaxMain {
         // Determine which cat fact to send based on the subscriber's displacement from current
         // fact
         for(Subscriber sub : subscribers) {
-            String number = sub.getPhoneNumber();
-            int displacement = sub.getDisplacement();
-
             // Retrieve catFact
-            int thisIndex = index - displacement;
-            String fact = catFacts.get(thisIndex);
-
-            sender.setPhoneNumber(number);
-            sender.sendMessage(fact);
+            sender.setPhoneNumber(sub.getPhoneNumber());
+            sender.sendMessage(catFacts.get(getFactIndex(sub.getDisplacement())));
         }
-
-        log.info("Group fact sent to " + subscribers.size() + " people! New index: " + index);
 
         index++;
 
-        try {
-            PrintStream indexWriter = new PrintStream(new File("currentIndex.txt"));
-            indexWriter.print(index);
-            indexWriter.close();
-        } catch(FileNotFoundException e) {
-            log.severe("Error writing to currentIndex.txt. Will not exit. New index: " +
-                       index + "\n" + e);
+        log.info("Group fact sent to " + subscribers.size() + " people! New index: " + index);
+
+        if(!testing) {
+            try {
+                PrintStream indexWriter = new PrintStream(new File("currentIndex.txt"));
+                indexWriter.print(index);
+                indexWriter.close();
+            } catch(FileNotFoundException e) {
+                log.severe("Error writing to currentIndex.txt. Will not exit. New index: " +
+                           index + "\n" + e);
+            }
         }
     }
 
+    /**
+     * @return The correct filename for the subscribers file.
+     */
     private static String getSubscriberFile() {
-        return testing ? SUBSCRIBERS_SERIAL : SUBSCRIBERS_TEST_SERIAL;
+        return testing ? SUBSCRIBERS_TEST_SERIAL : SUBSCRIBERS_SERIAL;
     }
 }

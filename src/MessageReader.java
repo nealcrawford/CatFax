@@ -45,7 +45,7 @@ public class MessageReader {
 
             if(!handledSIDs.contains(sid)) {
                 newSIDs.add(sid);
-                System.out.println("newSID added");
+                //System.out.println("newSID added");
             }
         }
 
