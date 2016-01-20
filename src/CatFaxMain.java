@@ -267,9 +267,9 @@ public class CatFaxMain {
      */
     private static void saveSubscribers() throws IOException {
         try(FileOutputStream file = new FileOutputStream(new File("subscribers.serial"));
-            ObjectOutputStream ois = new ObjectOutputStream(file)) {
+            ObjectOutputStream oos = new ObjectOutputStream(file)) {
 
-            ois.writeObject(subscribers);
+            oos.writeObject(subscribers);
         } catch(IOException e) {
             // Don't want this error to end the program
             log.severe("Error saving subscribers.\n" + e);
@@ -277,9 +277,9 @@ public class CatFaxMain {
             log.severe("--------BEGIN 'subscribers.serial' DUMP--------\n");
             try {
                 FileOutputStream file = new FileOutputStream(new File("catfax.log"), true);
-                ObjectOutputStream ois = new ObjectOutputStream(file);
+                ObjectOutputStream oos = new ObjectOutputStream(file);
             } catch(IOException ex) {
-                log.severe("Error writing to log file, so we're fucked anyway.\n" + e);
+                log.severe("Error writing to log file, so we're fracked anyway.\n" + e); //I like battlestar glactica
                 throw ex;
             }
             log.severe("--------END 'subscribers.serial' DUMP--------\n");
