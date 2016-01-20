@@ -9,7 +9,6 @@ import java.io.Serializable;
 public class Subscriber implements Serializable {
     private String  phoneNumber;
     private int     displacement;
-    private boolean needsFact;
 
     /**
      * Constructs a new subscriber with default values.
@@ -67,7 +66,6 @@ public class Subscriber implements Serializable {
     public int hashCode() {
         int result = phoneNumber != null ? phoneNumber.hashCode() : 0;
         result = 31 * result + displacement;
-        result = 31 * result + (needsFact ? 1 : 0);
         return result;
     }
 
@@ -100,18 +98,9 @@ public class Subscriber implements Serializable {
     }
 
     /**
-     * @return If the user needs a fact
+     * @return String representation of the class
      */
-    public boolean needsFact() {
-        return needsFact;
-    }
-
-    /**
-     * Set whether the user needs a fact or not.
-     *
-     * @param needsFact Whether the user needs a fact
-     */
-    public void needsFact(boolean needsFact) {
-        this.needsFact = needsFact;
+    public String toString() {
+        return "[phone: " + phoneNumber + " dis: " + displacement + "]";
     }
 }
