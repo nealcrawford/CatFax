@@ -10,14 +10,16 @@ import java.util.logging.*;
 
 public class CatFaxMain {
 
-    private static final String ACCOUNT_SID        = "AC3fd9f1b394e4fbcff3966c17c131ef97";
-    private static final String AUTH_TOKEN         = "5f187afdea5b5b94aaa64d421fb486f7";
-    private static final String CATFAX_PHONE       = "+18187228329";
-    private static final String FACT_TIME          = "15:15"; // 3:15 PM
-    private static final String KILLSWITCH_CONFIRM = "Killswitch Activated";
-    private static final String KILLSWITCH_MSG     = "KILLALL";
-    private static final String KILLSWITCH_NUM1    = "+13603931867";
-    private static final String KILLSWITCH_NUM2    = "+13603256564";
+    private static final String ACCOUNT_SID             = "AC3fd9f1b394e4fbcff3966c17c131ef97";
+    private static final String AUTH_TOKEN              = "5f187afdea5b5b94aaa64d421fb486f7";
+    private static final String CATFAX_PHONE            = "+18187228329";
+    private static final String FACT_TIME               = "15:15"; // 3:15 PM
+    private static final String KILLSWITCH_CONFIRM      = "Killswitch Activated";
+    private static final String KILLSWITCH_MSG          = "KILLALL";
+    private static final String KILLSWITCH_NUM1         = "+13603931867";
+    private static final String KILLSWITCH_NUM2         = "+13603256564";
+    private static final String SUBSCRIBERS_SERIAL      = "subscribers.serial";
+    private static final String SUBSCRIBERS_TEST_SERIAL = "subscribers_test.serial";
 
     private static List<Subscriber> subscribers;
     private static List<String>     catFacts;
@@ -25,6 +27,7 @@ public class CatFaxMain {
     private static boolean messagesSent;
     private static boolean reconnect;
     private static int     index;
+    private static boolean testing;
 
     private static Logger log = Logger.getLogger("CatFax");
 
@@ -33,9 +36,14 @@ public class CatFaxMain {
     private static Map<String, String> filters;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+        testing = args[0].equals("testing");
 
         // Setup logger
         FileHandler fh = new FileHandler("catfax.log");
+        // Enable logging to sout if in testing mode
+        if(testing) {
+            log.addHandler(new StreamHandler(System.out, new SimpleFormatter()));
+        }
         fh.setFormatter(new SimpleFormatter());
         log.addHandler(fh);
 
@@ -69,12 +77,42 @@ public class CatFaxMain {
             }
         }, 0, 1, TimeUnit.SECONDS);
 
+        if(testing) {
+            log.info("In testing mode. Commands: send, index, subs, exit");
+            Scanner scan = new Scanner(System.in);
+            boolean exit = false;
+            while(!exit) {
+                if(scan.hasNext()) {
+                    String input = scan.next();
+                    try {
+                        switch(input) {
+                            case "send":
+                                sendInstantFacts(subscribers);
+                                System.out.println("Texts sent");
+                                break;
+                            case "index":
+                                System.out.println("Current index: " + index);
+                                break;
+                            case "subs":
+                                System.out.println(subscribers);
+                                break;
+                            case "exit":
+                                exit = true;
+                        }
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
         // This will cause any RuntimeExceptions propagated through the stack to cause the
         // program to exit. This may be desirable for some exceptions. To enable this, add the
         // exception type to the try-catch block above.
         try {
             future.get();
         } catch(Exception e) {
+            executorService.shutdownNow();
             System.exit(0);
         }
     }
@@ -111,7 +149,7 @@ public class CatFaxMain {
     private static List<Subscriber> getSubscribers() throws IOException, ClassNotFoundException {
         List<Subscriber> subs;
 
-        try(FileInputStream file = new FileInputStream(new File("subscribers.serial"));
+        try(FileInputStream file = new FileInputStream(new File(getSubscriberFile()));
             ObjectInputStream ois = new ObjectInputStream(file)) {
 
             subs = (ArrayList<Subscriber>) ois.readObject();
@@ -266,15 +304,15 @@ public class CatFaxMain {
      * @throws IOException if the log file is not writable.
      */
     private static void saveSubscribers() throws IOException {
-        try(FileOutputStream file = new FileOutputStream(new File("subscribers.serial"));
-            ObjectOutputStream ois = new ObjectOutputStream(file)) {
+        try(FileOutputStream file = new FileOutputStream(new File(getSubscriberFile()));
+            ObjectOutputStream oos = new ObjectOutputStream(file)) {
 
-            ois.writeObject(subscribers);
+            oos.writeObject(subscribers);
         } catch(IOException e) {
             // Don't want this error to end the program
             log.severe("Error saving subscribers.\n" + e);
             log.severe("I cannot save subscribers so I will output the file here just in case");
-            log.severe("--------BEGIN 'subscribers.serial' DUMP--------\n");
+            log.severe("--------BEGIN '" + getSubscriberFile() + "' DUMP--------\n");
             try {
                 FileOutputStream file = new FileOutputStream(new File("catfax.log"), true);
                 ObjectOutputStream ois = new ObjectOutputStream(file);
@@ -282,7 +320,7 @@ public class CatFaxMain {
                 log.severe("Error writing to log file, so we're fucked anyway.\n" + e);
                 throw ex;
             }
-            log.severe("--------END 'subscribers.serial' DUMP--------\n");
+            log.severe("--------END '\" + getSubscriberFile() + \"' DUMP--------\n");
         }
     }
 
@@ -369,5 +407,9 @@ public class CatFaxMain {
             log.severe("Error writing to currentIndex.txt. Will not exit. New index: " +
                        index + "\n" + e);
         }
+    }
+
+    private static String getSubscriberFile() {
+        return testing ? SUBSCRIBERS_SERIAL : SUBSCRIBERS_TEST_SERIAL;
     }
 }
