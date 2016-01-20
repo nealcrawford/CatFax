@@ -315,9 +315,9 @@ public class CatFaxMain {
             log.severe("--------BEGIN '" + getSubscriberFile() + "' DUMP--------\n");
             try {
                 FileOutputStream file = new FileOutputStream(new File("catfax.log"), true);
-                ObjectOutputStream ois = new ObjectOutputStream(file);
+                ObjectOutputStream oos = new ObjectOutputStream(file);
             } catch(IOException ex) {
-                log.severe("Error writing to log file, so we're fucked anyway.\n" + e);
+                log.severe("Error writing to log file, so we're fracked anyway.\n" + e); //I like battlestar glactica
                 throw ex;
             }
             log.severe("--------END '\" + getSubscriberFile() + \"' DUMP--------\n");
