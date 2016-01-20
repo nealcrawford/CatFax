@@ -28,6 +28,7 @@ public class CatFaxMain {
     private static boolean reconnect;
     private static int     index;
     private static boolean testing;
+    private static boolean admin;
 
     private static Logger log = Logger.getLogger("CatFax");
 
@@ -37,7 +38,8 @@ public class CatFaxMain {
 
     public static void main(String[] args)
             throws IOException, ClassNotFoundException, TwilioRestException {
-        testing = args.length != 0;
+        testing = args.length > 0;
+        admin = args.length > 0 && args[0].equals("admin");
 
         // Setup logger
         FileHandler fh = new FileHandler("catfax.log");
@@ -81,7 +83,10 @@ public class CatFaxMain {
         }, 0, 1, TimeUnit.SECONDS);
 
         if(testing) {
-            log.info("In testing mode. Commands: send, index, subs, add #, remove #, " +
+            log.info("In " + (admin ? "admin" : "testing") + " mode. Commands: send, index, " +
+                     "subs, add #, " +
+                     "remove #," +
+                     " " +
                      "displacement # #, time #, settime ##:##, gettime, ping, exit");
             Scanner scan = new Scanner(System.in);
             while(true) {
@@ -270,7 +275,6 @@ public class CatFaxMain {
      */
     private static String getDate() {
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, 1);
 
         return new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime());
     }
@@ -301,6 +305,7 @@ public class CatFaxMain {
                 sender.setPhoneNumber(from.getPhoneNumber());
                 sender.sendMessage(KILLSWITCH_CONFIRM);
 
+                log.severe("KILLSWITCH RECEIVED");
                 System.exit(0);
             } else {
                 boolean newSubs = false;
@@ -433,14 +438,16 @@ public class CatFaxMain {
         for(Subscriber sub : subscribers) {
             // Retrieve catFact
             sender.setPhoneNumber(sub.getPhoneNumber());
-            sender.sendMessage(catFacts.get(getFactIndex(sub.getDisplacement())));
+            sender.sendMessage(catFacts
+                                       .get(getFactIndex(sub
+                                                                 .getDisplacement())));
         }
 
         index++;
 
         log.info("Group fact sent to " + subscribers.size() + " people! New index: " + index);
 
-        if(!testing) {
+        if(!testing || admin) {
             try {
                 PrintStream indexWriter = new PrintStream(new File("currentIndex.txt"));
                 indexWriter.print(index);
@@ -456,6 +463,6 @@ public class CatFaxMain {
      * @return The correct filename for the subscribers file.
      */
     private static String getSubscriberFile() {
-        return testing ? SUBSCRIBERS_TEST_SERIAL : SUBSCRIBERS_SERIAL;
+        return (testing && !admin) ? SUBSCRIBERS_TEST_SERIAL : SUBSCRIBERS_SERIAL;
     }
 }
