@@ -70,7 +70,7 @@ public class MessageReader {
      * @return ArrayList of handled messages.
      * @throws FileNotFoundException if handledMessages.txt does not exist.
      */
-    public static List<String> readInHandled() throws FileNotFoundException {
+    private static List<String> readInHandled() throws FileNotFoundException {
         Scanner fileReader = new Scanner(new File("handledMessages.txt"));
 
         List<String> handledSIDs = new ArrayList<>();
