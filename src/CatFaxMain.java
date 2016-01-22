@@ -298,7 +298,7 @@ public class CatFaxMain {
 
             if(isKillswitch(from.getPhoneNumber(),
                             message.getBody())) { // Check if message is a killswitch
-                System.out.println(KILLSWITCH_CONFIRM);
+                log.severe(KILLSWITCH_CONFIRM);
 
                 // Confirm that killswitch did work
                 sender.setPhoneNumber(from.getPhoneNumber());
