@@ -30,7 +30,7 @@ public class CatFaxMain {
     private static boolean testing;
     private static boolean admin;
 
-    private static Logger log = Logger.getLogger("CatFax");
+    public static Logger log = Logger.getLogger("CatFax");
 
     private static TwilioRestClient    client;
     private static MessageSender       sender;
@@ -84,10 +84,8 @@ public class CatFaxMain {
 
         if(testing) {
             log.info("In " + (admin ? "admin" : "testing") + " mode. Commands: send, index, " +
-                     "subs, add #, " +
-                     "remove #," +
-                     " " +
-                     "displacement # #, time #, settime ##:##, gettime, ping, exit");
+                     "subs, add #, remove #, displacement # #, time #, settime ##:##, gettime, " +
+                     "ping, exit");
             Scanner scan = new Scanner(System.in);
             while(true) {
                 if(scan.hasNext()) {
@@ -138,7 +136,7 @@ public class CatFaxMain {
                                 log.info("Command not recognized");
                         }
                     } catch(Exception e) {
-                        e.printStackTrace();
+                        log.log(Level.SEVERE, e.getMessage(), e);
                         throw e;
                     }
                 }
@@ -151,6 +149,7 @@ public class CatFaxMain {
         try {
             future.get();
         } catch(Exception e) {
+            log.log(Level.SEVERE, e.getCause().getMessage(), e.getCause());
             executorService.shutdownNow();
             System.exit(0);
         }
@@ -257,7 +256,7 @@ public class CatFaxMain {
      */
     private static List<String> getInbox() throws IOException {
         try {
-            filters.put("DateSent", getDate());
+            filters.put("DateCreated", getDate());
 
             MessageReader reader = new MessageReader(client, filters);
 

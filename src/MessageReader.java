@@ -45,6 +45,8 @@ public class MessageReader {
 
             if(!handledSIDs.contains(sid)) {
                 newSIDs.add(sid);
+                CatFaxMain.log.info("New message from: " + message.getFrom() + "\t " +
+                                    message.getBody());
                 //System.out.println("newSID added");
             }
         }
