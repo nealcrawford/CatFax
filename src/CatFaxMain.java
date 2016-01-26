@@ -84,7 +84,9 @@ public class CatFaxMain {
 
         if(testing) {
             log.info("In " + (admin ? "admin" : "testing") + " mode. Commands: send, index, " +
-                     "subs, add #, remove #, displacement # #, time #, settime ##:##, gettime, " +
+                     "subs, add # (displacement), remove #, displacement # #, time #, settime " +
+                     "##:##, " +
+                     "gettime, " +
                      "ping, exit");
             Scanner scan = new Scanner(System.in);
             while(true) {
@@ -120,7 +122,12 @@ public class CatFaxMain {
                                 log.info("Displacement set.");
                                 break;
                             case "add":
-                                subscribers.add(new Subscriber(scan.next(), index));
+                                String number = scan.next();
+                                if(scan.hasNextInt()) {
+                                    subscribers.add(new Subscriber(number, scan.nextInt()));
+                                } else {
+                                    subscribers.add(new Subscriber(number, index));
+                                }
                                 saveSubscribers();
                                 log.info("Added " +
                                          subscribers.get(subscribers.size() - 1).getPhoneNumber());
